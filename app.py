@@ -28,6 +28,45 @@ def find_valid_cards(player_deck, discard_deck, playing_color):
 
     return valid_indices
 
+def find_staking_cards(player_deck, top_card, playing_color):
+    valid_staking_cards = []
+    
+    if top_card["type"] == "Draw Two":
+        for i, player_card in enumerate(player_deck):
+            if player_card["type"] == "Draw Two" or player_card["type"] == "Reverse Draw Four" or player_card["type"] == "Draw Six" or player_card["type"] == "Draw Ten":
+                valid_staking_cards.append(i)
+            elif player_card["color"] == playing_color and player_card["type"] == "Draw Four":
+                valid_staking_cards.append(i)
+
+    elif top_card["type"] == "Draw Four":
+        for i, player_card in enumerate(player_deck):
+            if player_card["type"] == "Draw Four" or player_card["type"] == "Reverse Draw Four" or player_card["type"] == "Draw Six" or player_card["type"] == "Draw Ten":
+                valid_staking_cards.append(i)
+
+    elif top_card["type"] == "Reverse Draw Four":
+        for i, player_card in enumerate(player_deck):
+            if player_card["type"] == "Reverse Draw Four" or player_card["type"] == "Draw Six" or player_card["type"] == "Draw Ten":
+                valid_staking_cards.append(i)
+    
+    elif top_card["type"] == "Draw Six":
+        for i, player_card in enumerate(player_deck):
+            if player_card["type"] == "Draw Six" or player_card["type"] == "Draw Ten":
+                valid_staking_cards.append(i)
+
+    elif top_card["type"] == "Draw Tex":
+        for i, player_card in enumerate(player_deck):
+            if player_card["type"] == "Draw Ten":
+                valid_staking_cards.append(i)
+
+    return valid_staking_cards
+
+def find_valid_color_index(player_deck, color):
+    valid_color_indexes = []
+    for i, player_card in enumerate(player_deck):
+        if player_card["color"] == color:
+            valid_color_indexes.append(i)
+    return valid_color_indexes
+
 # Start the game function
 def start_game():
 
@@ -45,7 +84,8 @@ def start_game():
     while start_card["color"] == "Wild":
         shuffled_deck.append(start_card)  # Put the Wild card back
         shuffled_deck = shuffle(shuffled_deck)  # Shuffle the deck again
-        start_card = shuffled_deck.pop()  # Draw a new card
+        start_card = shuffled_deck.pop()  # Draw a new card3
+
 
     # Initialize discard deck and add the start card
     discard_deck.append(start_card)
@@ -55,10 +95,14 @@ def start_game():
 
     players_list = list(players_deck.keys())
 
-    print("No of players: ")
-    current_player = input() # user input
+    
+    current_player = players_list[0]
 
     playing_color = discard_deck[-1]["color"]
+
+    draw_stack  = []
+
+    Roulette = False
 
     while True:
         top_card = discard_deck[-1]        
@@ -68,121 +112,263 @@ def start_game():
 
         print(f"{current_player}'s deck: {players_deck.get(current_player)}")
 
-        if len(draw_stack) > 0:
-            print(f"Draw stack: {draw_stack}")
-            find_playable_cards = []
-             
+        if top_card["color"] != "Wild":
+            playing_color = top_card["color"]
+        
+        print(f"Playing color: {playing_color}")
 
-        valid_indices = find_valid_cards(players_deck.get(current_player), discard_deck, playing_color)
-        print(f"Valid indices: {valid_indices}")
-
-        draw_stack = []
-
-        if len(valid_indices) == 0:
-            while len(valid_indices) == 0:
-                print("No valid cards to play.")
-                while True:
-                    print("Do you want to draw a card? (Y/N)")
-                    draw_card = input()
-                    if draw_card == "Y":
-                        players_deck.get(current_player).append(shuffled_deck.pop())
-                        print(f"{current_player}'s deck: {players_deck.get(current_player)}")
-                        valid_indices = find_valid_cards(players_deck.get(current_player), discard_deck)
-                        print(f"Valid indices: {valid_indices}")
-                    else:
-                        break
+        if Roulette == True:
+            print("Select a color: Red, Green, Blue, Yellow")
+            selected_color = input()
+            print(f"Selected color: {selected_color}")
+            playing_color = selected_color
+            players_deck.get(current_player).append(shuffled_deck.pop())
+            print(f"Cards picked : {players_deck.get(current_player)[-1]}")
+            while players_deck.get(current_player)[-1]["color"] != selected_color:
+                players_deck.get(current_player).append(shuffled_deck.pop())
+                print(f"Cards picked : {players_deck.get(current_player)[-1]}")
+            Roulette = False
+        
         else:
-            print("Do you want to draw a card or play a card? (D/P) ")
-            case = input()
-            if case == "D":
-                players_deck[current_player].append(shuffled_deck.pop())
-                print(f"{current_player}'s deck: {players_deck.get(current_player)}")
-
-                while True:
-                    print("Do you want to draw another card? (Y/N)")
-                    draw_card = input()
-                    if draw_card == "Y":
-                        players_deck.get(current_player).append(shuffled_deck.pop())
-                        print(f"{current_player}'s deck: {players_deck.get(current_player)}")
-                    else:
-                        break
-                continue
-
-
-            elif case == "P":
-                print("Select a card to play")
-                selected_card_index = int(input())
-
-                while selected_card_index not in valid_indices:
-                    print("Invalid card. Please select a valid card.")
-                    selected_card_index = int(input())
-
-                selected_card = players_deck.get(current_player).pop(selected_card_index)
-                print(f"Selected card: {selected_card}")
-
-                if selected_card["color"] == "Wild" and selected_card["type"] == "Draw Six":
-                    print("Select a color: Red, Green, Blue, Yellow")
-                    selected_color = input()
-                    print(f"Selected color: {selected_color}")
-                    playing_color = selected_color
-                    
-                    # Next player draws 6 cards                    
-                    for i in range(6):
-                        draw_stack.append(shuffled_deck.pop())
-
-                elif selected_card["color"] == "Wild" and selected_card["type"] == "Draw Ten":
-                    pass
-
-                elif selected_card["color"] == "Wild" and selected_card["type"] == "Reverse Draw Four":
-                    pass
-
-                elif selected_card["color"] == "Wild" and selected_card["type"] == "Color Roulette":
-                    pass
-                
-                elif selected_card["type"] == "Skip":
-                    pass
-
-                elif selected_card["type"] == "Skip All":
-                    pass
-
-                elif selected_card["type"] == "Reverse":
-                    pass
-
-                elif selected_card["type"] == "Draw Two":
-                    pass
-
-                elif selected_card["type"] == "Draw Four":
-                    pass
-
-                elif selected_card["type"] == "Discard All of Color":
-                    pass
-
-                elif selected_card["type"] == "0":
-                    pass
-
-                elif selected_card["type"] == "7":
-                    pass
-                
+            if len(draw_stack) > 0:
+                print(f"Draw stack: {draw_stack}")
+                print("Do you want to draw card or stack? (D/S)")
+                draw_stack_choice = input()
+                if draw_stack_choice == "D":
+                    players_deck.get(current_player).extend(draw_stack)
+                    draw_stack = []
                 else:
-                    discard_deck.append(selected_card)
-                    print(f"Discard deck: {discard_deck}")
+                    valid_staking_cards = find_staking_cards(players_deck.get(current_player), top_card, playing_color)
+                    print(f"Valid indices: {valid_staking_cards}")
+                    if len(valid_staking_cards) > 0:
+                        print("Select a card to play")
+                        selected_card_index = int(input())
+                        while selected_card_index not in valid_staking_cards:
+                            print("Invalid card. Please select a valid card.")
+                            selected_card_index = int(input())
+                        selected_card = players_deck.get(current_player).pop(selected_card_index)
+                        print(f"Selected card: {selected_card}")
+
+                        if selected_card["type"] == "Draw Two":
+                            # Next player draws 2 cards                    
+                            for i in range(2):
+                                draw_stack.append(shuffled_deck.pop())
+
+                        elif selected_card["type"] == "Draw Four":
+                            # Next player draws 4 cards                    
+                            for i in range(4):
+                                draw_stack.append(shuffled_deck.pop())
+
+                        elif selected_card["type"] == "Reverse Draw Four":
+                            print("Select a color: Red, Green, Blue, Yellow")
+                            selected_color = input()
+                            print(f"Selected color: {selected_color}")
+                            playing_color = selected_color
+
+                            players_list = [players_list[0]] + players_list[:0:-1]
+
+                            # Next player draws 4 cards                    
+                            for i in range(4):
+                                draw_stack.append(shuffled_deck.pop())
+                            
+
+                        elif selected_card["type"] == "Draw Six":
+                            print("Select a color: Red, Green, Blue, Yellow")
+                            selected_color = input()
+                            print(f"Selected color: {selected_color}")
+                            playing_color = selected_color
+                            
+                            # Next player draws 6 cards                    
+                            for i in range(6):
+                                draw_stack.append(shuffled_deck.pop())
+
+                        elif selected_card["type"] == "Draw Ten":
+                            print("Select a color: Red, Green, Blue, Yellow")
+                            selected_color = input()
+                            print(f"Selected color: {selected_color}")
+                            playing_color = selected_color
+                            
+                            # Next player draws 10 cards                    
+                            for i in range(10):
+                                draw_stack.append(shuffled_deck.pop())
+
+                        discard_deck.append(selected_card)
+                        print(f"Discard deck: {discard_deck}")
+                        
+                    else:
+                        print("No valid cards to play.")
+                        players_deck.get(current_player).extend(draw_stack)
+                        draw_stack = []
+                
+            else:                                   
+                valid_indices = find_valid_cards(players_deck.get(current_player), discard_deck, playing_color)
+                print(f"Valid indices: {valid_indices}")            
+
+                if len(valid_indices) == 0:
+                    while len(valid_indices) == 0:
+                        print("No valid cards to play.")
+                        while True:
+                            print("Do you want to draw a card? (Y/N)")
+                            draw_card = input()
+                            if draw_card == "Y":
+                                players_deck.get(current_player).append(shuffled_deck.pop())
+                                print(f"{current_player}'s deck: {players_deck.get(current_player)}")
+                                valid_indices = find_valid_cards(players_deck.get(current_player), discard_deck, playing_color)
+                                print(f"Valid indices: {valid_indices}")
+                            else:
+                                break
+                    continue
+
+                else:
+                    print("Do you want to draw a card or play a card? (D/P) ")
+                    case = input()
+                    if case == "D":
+                        players_deck[current_player].append(shuffled_deck.pop())
+                        print(f"{current_player}'s deck: {players_deck.get(current_player)}")
+
+                        while True:
+                            print("Do you want to draw another card? (Y/N)")
+                            draw_card = input()
+                            if draw_card == "Y":
+                                players_deck.get(current_player).append(shuffled_deck.pop())
+                                print(f"{current_player}'s deck: {players_deck.get(current_player)}")
+                                valid_indices = find_valid_cards(players_deck.get(current_player), discard_deck, playing_color)
+                                print(f"Valid indices: {valid_indices}")
+                            else:
+                                break
+                        continue
 
 
-                if len(players_deck.get(current_player)) == 0:
-                    print(f"{current_player} wins!")
-                    break
+                    else:
+                        print("Select a card to play")
+                        selected_card_index = int(input())
 
-        next_player = players_list.index(current_player) + 1
-        current_player = players_list[next_player % no_of_players]
+                        while selected_card_index not in valid_indices:
+                            print("Invalid card. Please select a valid card.")
+                            selected_card_index = int(input())
+
+                        selected_card = players_deck.get(current_player).pop(selected_card_index)
+                        print(f"Selected card: {selected_card}")
+
+                        if selected_card["type"] == "Draw Six":
+                            print("Select a color: Red, Green, Blue, Yellow")
+                            selected_color = input()
+                            print(f"Selected color: {selected_color}")
+                            playing_color = selected_color
+                            
+                            # Next player draws 6 cards                    
+                            for i in range(6):
+                                draw_stack.append(shuffled_deck.pop())
+
+                        elif selected_card["type"] == "Draw Ten":
+                            print("Select a color: Red, Green, Blue, Yellow")
+                            selected_color = input()
+                            print(f"Selected color: {selected_color}")
+                            playing_color = selected_color
+                            
+                            # Next player draws 10 cards                    
+                            for i in range(10):
+                                draw_stack.append(shuffled_deck.pop())
+
+                        elif selected_card["type"] == "Reverse Draw Four":
+                            print("Select a color: Red, Green, Blue, Yellow")
+                            selected_color = input()
+                            print(f"Selected color: {selected_color}")
+                            playing_color = selected_color
+
+                            players_list = [players_list[0]] + players_list[:0:-1]
+                            
+                            # Next player draws 4 cards                    
+                            for i in range(4):
+                                draw_stack.append(shuffled_deck.pop())
+
+                        elif selected_card["type"] == "Color Roulette":
+                            Roulette = True
+                        
+                        elif selected_card["type"] == "Skip":
+                            players_list.append(players_list.pop(0))
+                            current_player = players_list[0]
+
+                        elif selected_card["type"] == "Skip All":
+                            players_list.insert(0, players_list.pop())
+
+                        elif selected_card["type"] == "Reverse":
+                            players_list = [players_list[0]] + players_list[:0:-1]
+
+                        elif selected_card["type"] == "Draw Two":
+                            for i in range(2):
+                                draw_stack.append(shuffled_deck.pop())
+
+                        elif selected_card["type"] == "Draw Four":
+                            for i in range(4):
+                                draw_stack.append(shuffled_deck.pop())
+
+                        elif selected_card["type"] == "Discard All of Color": 
+                            valid_color_indexes = find_valid_color_index(players_deck.get(current_player), selected_card["color"])
+                            print(f"Valid color indexes: {valid_color_indexes}")
+
+                            for i in valid_color_indexes:
+                                print(f"{i}: {players_deck.get(current_player)[i]}")
+                                print("Do you want to discard this card? (Y/N)")
+                                discard_card = input()
+                                if discard_card == "Y":
+                                    discard_deck.append(players_deck.get(current_player)[i])
+                                    players_deck.get(current_player).pop(i)
+                                else:
+                                    continue
+
+                        elif selected_card["type"] == "0": 
+                            # Get list of current hands
+                            hands = [players_deck[player] for player in players_list]
+
+                            # Rotate hands to the left
+                            rotated_hands = hands[1:] + [hands[0]]
+
+                            # Assign the rotated hands back to players
+                            for i, player in enumerate(players_list):
+                                players_deck[player] = rotated_hands[i]
+
+                            print("Players' hands have been rotated!")
 
 
+                        elif selected_card["type"] == "7": 
+                            # Prompt the current player to choose another player
+                            print(f"Choose a player to swap hands with (available players: {[p for p in players_list if p != current_player]}):")
+                            chosen_player = input()
+                            
+                            # Validate the chosen player
+                            while chosen_player not in players_list or chosen_player == current_player:
+                                print("Invalid player. Please choose a valid player.")
+                                chosen_player = input()
+                            
+                            # Swap hands between the current player and the chosen player
+                            current_player_hand = players_deck[current_player]
+                            chosen_player_hand = players_deck[chosen_player]
+                            
+                            players_deck[current_player] = chosen_player_hand
+                            players_deck[chosen_player] = current_player_hand
+                            
+                            print(f"{current_player} and {chosen_player} have swapped hands!")
 
+                        discard_deck.append(selected_card)
+                        print(f"Discard deck: {discard_deck}")
 
+                        
+        if len(players_deck.get(current_player)) == 0:
+            print(f"{current_player} wins!")
+            break
+        
+        # Pop the 1st player and add to the end of the list
+        players_list.append(players_list.pop(0))
+        current_player = players_list[0]
 
-
-
-
+        print("                                                                                                                                           ")
+        print("                                                                                                                                           ")
+        print("                                                                                                                                           ")
+        print("                                                                                                                                           ")
+        print("                                                                                                                                           ")            
 
 start_game()
 
-
+# TODO: Implement the following special cards:
+# - Implement Uno callout
