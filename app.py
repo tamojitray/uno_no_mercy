@@ -165,7 +165,10 @@ def start_game():
                             print(f"Selected color: {selected_color}")
                             playing_color = selected_color
 
-                            players_list = [players_list[0]] + players_list[:0:-1]
+                            if len(players_list) >= 3:
+                                players_list = [players_list[0]] + players_list[:0:-1] 
+                            else:
+                                players_list.reverse()
 
                             # Next player draws 4 cards                    
                             for i in range(4):
@@ -196,7 +199,7 @@ def start_game():
                         print(f"Discard deck: {discard_deck}")
                         
                     else:
-                        print("No valid cards to play.")
+                        print("No valid cards to play. Drawing Cards")
                         players_deck.get(current_player).extend(draw_stack)
                         draw_stack = []
                 
@@ -276,7 +279,10 @@ def start_game():
                             print(f"Selected color: {selected_color}")
                             playing_color = selected_color
 
-                            players_list = [players_list[0]] + players_list[:0:-1]
+                            if len(players_list) >= 3:
+                                players_list = [players_list[0]] + players_list[:0:-1] 
+                            else:
+                                players_list.reverse()
                             
                             # Next player draws 4 cards                    
                             for i in range(4):
@@ -293,7 +299,10 @@ def start_game():
                             players_list.insert(0, players_list.pop())
 
                         elif selected_card["type"] == "Reverse":
-                            players_list = [players_list[0]] + players_list[:0:-1]
+                            if len(players_list) >= 3:
+                                players_list = [players_list[0]] + players_list[:0:-1] 
+                            else:
+                                players_list.reverse()
 
                         elif selected_card["type"] == "Draw Two":
                             for i in range(2):
@@ -357,16 +366,22 @@ def start_game():
         if len(players_deck.get(current_player)) == 0:
             print(f"{current_player} wins!")
             break
+
+        if len(players_deck.get(current_player) >= 25):
+            print(f"{current_player} has 25 cards. {current_player} loses!")
         
         # Pop the 1st player and add to the end of the list
         players_list.append(players_list.pop(0))
         current_player = players_list[0]
 
-        print("                                                                                                                                           ")
-        print("                                                                                                                                           ")
-        print("                                                                                                                                           ")
-        print("                                                                                                                                           ")
-        print("                                                                                                                                           ")            
+        if len(discard_card > 1):
+            shuffled_deck.extend(discard_deck[:-1])
+            shuffle(shuffled_deck)
+            discard_deck = discard_deck[-1:]
+
+        print()        
+        print()
+        print()
 
 start_game()
 
