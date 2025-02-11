@@ -93,6 +93,8 @@ def start_game():
     # Distribute cards to players
     players_deck, shuffled_deck = distribute_cards(no_of_players, shuffled_deck)
 
+    print(players_deck)
+
     players_list = list(players_deck.keys())
 
     
@@ -240,8 +242,7 @@ def start_game():
                             else:
                                 break
                         continue
-
-
+                    
                     else:
                         print("Select a card to play")
                         selected_card_index = int(input())
@@ -339,7 +340,6 @@ def start_game():
 
                             print("Players' hands have been rotated!")
 
-
                         elif selected_card["type"] == "7": 
                             # Prompt the current player to choose another player
                             print(f"Choose a player to swap hands with (available players: {[p for p in players_list if p != current_player]}):")
@@ -361,23 +361,27 @@ def start_game():
 
                         discard_deck.append(selected_card)
                         print(f"Discard deck: {discard_deck}")
-
                         
         if len(players_deck.get(current_player)) == 0:
             print(f"{current_player} wins!")
             break
 
-        if len(players_deck.get(current_player) >= 25):
-            print(f"{current_player} has 25 cards. {current_player} loses!")
-        
-        # Pop the 1st player and add to the end of the list
-        players_list.append(players_list.pop(0))
-        current_player = players_list[0]
-
-        if len(discard_card > 1):
+        if len(discard_deck > 1):
             shuffled_deck.extend(discard_deck[:-1])
             shuffle(shuffled_deck)
             discard_deck = discard_deck[-1:]
+
+        if len(players_deck.get(current_player) >= 25):
+            print(f"{current_player} has 25 cards. {current_player} loses!")
+            shuffled_deck.extend(players_deck.get(current_player))
+            shuffled_deck = shuffle(shuffled_deck)
+            del players_deck[current_player]
+            players_list.remove(current_player)
+            break            
+        
+        # Pop the 1st player and add to the end of the list
+        players_list.append(players_list.pop(0))
+        current_player = players_list[0]        
 
         print()        
         print()
